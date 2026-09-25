@@ -1,0 +1,47 @@
+{
+  "_hinweis": "Alle Regeln des Director-Bots. Die KI darf diese Werte NICHT ändern – nur du, hier in der Datei. Alle Zahlen sind Vorschläge und frei anpassbar.",
+  "tokenSymbol": "LIBERTY",
+  "tokenDecimals": 6,
+  "totalSupply": 1000000000,
+  "feedShareOfFees": 0.5,
+  "minFeedSol": 0.02,
+  "maxFeedSolPerCycle": 5,
+  "reserveSol": 0.01,
+  "cycleMinutes": 1,
+  "surgeSol": 1.0,
+  "dipTriggerPct": 15,
+  "dipCooldownMinutes": 5,
+  "slippagePct": 5,
+  "devBagBurn": {
+    "enabled": false,
+    "_hinweis": "AUS. Der Dev-Kauf gehört dem Team und wird nicht verbrannt. Der Bot verbrennt nur, was er selbst kauft. (Auf true stellen, falls du das später doch willst.)",
+    "tranches": [
+      {
+        "mcapUsd": 100000,
+        "pct": 25
+      },
+      {
+        "mcapUsd": 250000,
+        "pct": 25
+      },
+      {
+        "mcapUsd": 500000,
+        "pct": 25
+      },
+      {
+        "mcapUsd": 1000000,
+        "pct": 25
+      }
+    ]
+  },
+  "narrator": {
+    "mode": "auto",
+    "_hinweis": "auto = Claude-API wenn ANTHROPIC_API_KEY gesetzt ist, sonst Vorlagen. Die KI schreibt nur den Kommentar – sie entscheidet nichts über Geld.",
+    "model": "claude-haiku-4-5-20251001"
+  },
+  "output": {
+    "statePath": "public/state.json",
+    "maxLogEntries": 500
+  },
+  "_hinweis_split": "feedShareOfFees 0.5 = 50 % der eingesammelten Fees kaufen & verbrennen, 50 % gehen als Lab-Anteil an TREASURY_WALLET (.env). Auf der Website offen ausgewiesen."
+}

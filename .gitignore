@@ -1,0 +1,5 @@
+node_modules/
+.env
+*.json.tmp
+creator-wallet.json
+*wallet*.json

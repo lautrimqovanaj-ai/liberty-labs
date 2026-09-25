@@ -1,0 +1,24 @@
+{
+  "name": "liberty-labs-director",
+  "version": "0.1.0",
+  "description": "Der Director-Bot von Liberty Labs: sammelt Creator-Fees, kauft $LIBERTY zurück und verbrennt sie – mit öffentlichem Beweis-Log.",
+  "type": "module",
+  "private": true,
+  "engines": {
+    "node": ">=20"
+  },
+  "scripts": {
+    "start": "node src/index.js",
+    "once": "node src/index.js --once",
+    "simulate": "node src/index.js --simulate --hours 72",
+    "test": "node --test test/*.test.js",
+    "serve": "node src/index.js"
+  },
+  "dependencies": {
+    "@pump-fun/pump-swap-sdk": "^1.15.0",
+    "@solana/spl-token": "^0.4.13",
+    "@solana/web3.js": "^1.98.2",
+    "bn.js": "^5.2.1",
+    "bs58": "^6.0.0"
+  }
+}
