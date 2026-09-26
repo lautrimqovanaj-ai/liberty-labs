@@ -30,6 +30,7 @@ async function main() {
   if (missing.length) {
     console.error(`Not live yet – missing: ${missing.join(', ')} (see .env.example). The website runs in preview mode.`);
     if (args.once) process.exit(2);
+    if (env.mint) return pendingLoop();                    // coin exists, key not set yet: honest zero state + live market data
     // Preview mode: provide simulation data if there is no state.json yet
     if (!existsSync(statePath)) await simulate(72);
     return; // the server keeps running; restart after setting MINT
@@ -39,7 +40,8 @@ async function main() {
   const chain = makeChain({ rpcUrl: env.rpcUrl, keypair, mint: env.mint, cfg });
   console.log(`Director online · wallet ${chain.owner} · mint ${env.mint}`);
 
-  const state = loadState(statePath, emptyState(cfg, 'live'));
+  const loaded = loadState(statePath, null);
+  const state = loaded && loaded.mode !== 'simulation' ? loaded : emptyState(cfg, 'live');   // never carry simulated numbers into live mode
   state.mode = 'live'; state.mint = env.mint; state.wallet = chain.owner; state.treasuryWallet = env.treasuryWallet || null; state.repo = env.repoUrl || null;
   if (!state.startedAt) state.startedAt = Date.now();
   if (env.devBagTokens && !state.devBag.tokens) state.devBag.tokens = env.devBagTokens;
@@ -48,6 +50,25 @@ async function main() {
     try { await tick(chain, state, Date.now(), Math.random); }
     catch (e) { console.error('tick failed:', e.message); }
     if (args.once) break;
+    await sleep(env.pollMinutes * 60_000);
+  } while (true);
+}
+
+/** Pending mode: the coin is live but the Director has no key yet. No burns are claimed; market data is refreshed. */
+async function pendingLoop() {
+  const prev = loadState(statePath, null);
+  const state = prev && prev.mode !== 'simulation' ? prev : emptyState(cfg, 'pending');
+  state.mode = 'pending'; state.mint = env.mint; state.treasuryWallet = env.treasuryWallet || null; state.repo = env.repoUrl || null;
+  state.log = state.log.filter(e => e.mode !== 'simulation'); state.milestones = state.milestones.filter(m => !m.simulated);
+  if (!state.startedAt) state.startedAt = Date.now();
+  do {
+    try {
+      const r = await fetch(`https://frontend-api-v3.pump.fun/coins-v2/${env.mint}`, { headers: { accept: 'application/json' } });
+      if (r.ok) { const c = await r.json(); const m = Number(c.usd_market_cap); if (Number.isFinite(m)) { state.mcapUsd = m; pushPrice(state, Date.now(), m); } }
+    } catch (e) { console.warn('coin api failed:', e.message); }
+    state.updatedAt = Date.now();
+    saveState(statePath, state, cfg.output.maxLogEntries);
+    log(`pending · coin ${env.mint} · mcap ${state.mcapUsd ?? 'n/a'} USD · waiting for KEYPAIR_BASE58`);
     await sleep(env.pollMinutes * 60_000);
   } while (true);
 }
