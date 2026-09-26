@@ -16,7 +16,7 @@ import { startServer } from './server.js';
 
 const args = parseArgs(process.argv.slice(2));
 const { cfg, env } = loadConfig();
-const statePath = cfg.output.statePath;
+const statePath = process.env.STATE_PATH || cfg.output.statePath;   // STATE_PATH: put it on a persistent volume in the cloud, otherwise burns vanish on every redeploy
 
 main().catch(e => { console.error('FATAL', e); process.exit(1); });
 
@@ -24,7 +24,7 @@ async function main() {
   if (args.simulate) return simulate(Number(args.hours || 72));
 
   // Always serve the website + state.json (even before launch), so the link exists before the coin does.
-  if (!args.once && process.env.SERVE !== '0') startServer({ root: 'public' });
+  if (!args.once && process.env.SERVE !== '0') startServer({ root: 'public', statePath });
 
   const missing = missingForLive(env);
   if (missing.length) {
@@ -45,6 +45,8 @@ async function main() {
   state.mode = 'live'; state.mint = env.mint; state.wallet = chain.owner; state.treasuryWallet = env.treasuryWallet || null; state.repo = env.repoUrl || null;
   if (!state.startedAt) state.startedAt = Date.now();
   if (env.devBagTokens && !state.devBag.tokens) state.devBag.tokens = env.devBagTokens;
+  recoverLog(state);                                     // optional: re-add receipts lost before the state was on a volume
+  saveState(statePath, state, cfg.output.maxLogEntries); // write the live state at once, never show stale/simulated data
 
   do {
     try { await tick(chain, state, Date.now(), Math.random); }
@@ -52,6 +54,23 @@ async function main() {
     if (args.once) break;
     await sleep(env.pollMinutes * 60_000);
   } while (true);
+}
+
+/** RECOVER_LOG (JSON array of feed entries) re-adds receipts that were lost while the state still lived on an ephemeral disk. Applied once. */
+function recoverLog(state) {
+  const raw = process.env.RECOVER_LOG; if (!raw) return;
+  try {
+    const entries = JSON.parse(raw); if (!Array.isArray(entries)) return;
+    const have = new Set(state.log.map(e => e.sigs?.burn));
+    for (const e of entries) {
+      if (!e?.sigs?.burn || have.has(e.sigs.burn)) continue;
+      state.log.push(e); state.burnCount += 1; state.burnedTokens += e.tokens || 0; state.feesFedSol += e.sol || 0;
+      state.feesCollectedSol += (e.sol || 0) * 2; state.labShareSol += e.sol || 0; state.labPaidOutSol += e.sol || 0;
+      state.lastFeedAt = Math.max(state.lastFeedAt || 0, e.ts || 0);
+    }
+    state.log.sort((a, b) => b.ts - a.ts);
+    log(`recovered ${entries.length} log entries from RECOVER_LOG`);
+  } catch (e) { console.warn('RECOVER_LOG ignored:', e.message); }
 }
 
 /** Pending mode: the coin is live but the Director has no key yet. No burns are claimed; market data is refreshed. */
@@ -78,6 +97,7 @@ export async function tick(chain, state, now, rand) {
   const snap = await chain.snapshot();
   const price1hAgo = pushPrice(state, now, snap.priceProxy);
   Object.assign(state, { vaultSol: snap.vaultSol, walletSol: snap.walletSol, supplyNow: snap.supplyNow, mcapUsd: snap.mcapUsd, teamTokens: Math.floor(snap.walletTokens ?? 0), updatedAt: now });
+  if (Number.isFinite(snap.supplyNow) && snap.supplyNow > 0) state.burnedTokens = Math.max(state.burnedTokens, round(state.totalSupply - snap.supplyNow, 6));   // on-chain truth beats the counter
 
   const actions = decide(now, {
     vaultSol: snap.vaultSol, feedBudgetSol: state.feedBudgetSol, walletSol: snap.walletSol, lastFeedAt: state.lastFeedAt, lastDipFeedAt: state.lastDipFeedAt,

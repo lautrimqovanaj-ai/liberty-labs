@@ -6,15 +6,16 @@ import { extname, join, normalize, resolve } from 'node:path';
 
 const TYPES = { '.html': 'text/html; charset=utf-8', '.json': 'application/json; charset=utf-8', '.js': 'text/javascript; charset=utf-8', '.css': 'text/css; charset=utf-8', '.png': 'image/png', '.svg': 'image/svg+xml', '.jpg': 'image/jpeg', '.webp': 'image/webp', '.ico': 'image/x-icon', '.txt': 'text/plain; charset=utf-8', '.md': 'text/markdown; charset=utf-8' };
 
-export function startServer({ root = 'public', port = Number(process.env.PORT || 3000), log = console } = {}) {
+export function startServer({ root = 'public', statePath = null, port = Number(process.env.PORT || 3000), log = console } = {}) {
   const base = resolve(root);
+  const stateFile = statePath ? resolve(statePath) : null;   // state.json may live outside public/ (persistent volume)
   const server = createServer(async (req, res) => {
     try {
       const url = new URL(req.url, 'http://x');
       let path = normalize(decodeURIComponent(url.pathname)).replace(/^(\.\.[/\\])+/, '');
       if (path === '/' || path === '\\') path = '/index.html';
-      const file = join(base, path);
-      if (!file.startsWith(base)) { res.writeHead(403); return res.end(); }
+      const file = (path === '/state.json' && stateFile) ? stateFile : join(base, path);
+      if (file !== stateFile && !file.startsWith(base)) { res.writeHead(403); return res.end(); }
       const info = await stat(file).catch(() => null);
       if (!info || !info.isFile()) { res.writeHead(404, { 'content-type': 'text/plain' }); return res.end('not found'); }
       const ext = extname(file).toLowerCase();
