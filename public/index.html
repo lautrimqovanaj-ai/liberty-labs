@@ -7,7 +7,7 @@
 <title>Liberty Labs</title>
 </head>
 <body>
-<meta name="description" content="Liberty Labs – the lab that burns its own supply. An AI Director and its crew turn half of every $LIBERTY trading fee into a verifiable burn.">
+<meta name="description" content="Liberty Labs – the lab that burns its own supply. An AI Director and its crew turn half of every $LiLa.GOV trading fee into a verifiable burn.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@700;800;900&family=Archivo:wght@400;500;600&family=JetBrains+Mono:wght@400;500;600&display=swap">
 <style>
@@ -315,7 +315,7 @@
         <button class="btn" id="playBtn">Play</button>
         <a class="btn solid" id="tradeBtn" href="#" target="_blank" rel="noopener" hidden>Trade on pump.fun</a>
       </div>
-      <div class="row"><div class="pill ca" id="caPill"><span class="sym">$LIBERTY</span><span>CA</span><span id="caShort">revealed at launch</span><span class="sep"></span><button id="copyCa" type="button" disabled>Copy</button></div></div>
+      <div class="row"><div class="pill ca" id="caPill"><span class="sym">$LiLa.GOV</span><span>CA</span><span id="caShort">revealed at launch</span><span class="sep"></span><button id="copyCa" type="button" disabled>Copy</button></div></div>
       <div class="row secondary"><a class="btn" href="#feed">Feed</a><a class="btn" href="#board">Board</a></div>
     </div>
 
@@ -342,7 +342,7 @@
     <div class="now"><span><span class="k">Right now</span><span id="nowText">The Director is booting the lab…</span></span></div>
 
     <div class="counter">
-      <div class="label">$LIBERTY burned so far</div>
+      <div class="label">$LiLa.GOV burned so far</div>
       <div class="big num" id="burnedBig">0</div>
       <div class="sub num"><b id="burnedPct">0.00 %</b> of supply <span class="dim">·</span> <b id="solFed">0.00</b> SOL fed to the furnace</div>
     </div>
@@ -367,7 +367,7 @@
     <div class="wrap">
       <div class="eyebrow">Thesis</div>
       <h2>Humans trade.<br>The lab burns.</h2>
-      <p class="lede">Liberty Labs is a memecoin with a furnace and a payroll. Every trade pays a creator fee. Half of it buys $LIBERTY on the open market and feeds it to the furnace, live and on the record. The other half pays the lab that keeps the lights on. Burned tokens are gone forever, and every burn and every payout has an on-chain receipt.</p>
+      <p class="lede">Liberty Labs is a memecoin with a furnace and a payroll. Every trade pays a creator fee. Half of it buys $LiLa.GOV on the open market and feeds it to the furnace, live and on the record. The other half pays the lab that keeps the lights on. Burned tokens are gone forever, and every burn and every payout has an on-chain receipt.</p>
       <div class="split" aria-label="Fee split">
         <div class="bar"><span class="a" id="splitA" style="width:50%"></span><span class="b" id="splitB" style="width:50%"></span></div>
         <div class="legend"><span><i style="background:var(--chart-ember)"></i><span id="splitAText">50 % buy &amp; burn</span></span><span><i style="background:var(--chart-blue)"></i><span id="splitBText">50 % lab treasury</span></span></div>
@@ -403,12 +403,12 @@
         <div class="card">
           <div class="k">Team allocation</div>
           <div class="v gold num" id="teamTokens" style="font-size:34px">—</div>
-          <p id="teamText">$LIBERTY held by the team, disclosed in a public wallet. Not locked. The bot never touches it: it only burns what it buys with fees.</p>
+          <p id="teamText">$LiLa.GOV held by the team, disclosed in a public wallet. Not locked. The bot never touches it: it only burns what it buys with fees.</p>
           <p class="fine" id="teamPct">—</p>
         </div>
         <div class="card chartcard">
           <div class="k">Cumulative burn · last <span id="chartSpan">72 h</span></div>
-          <div class="chartwrap"><canvas id="burnChart" aria-label="Cumulative $LIBERTY burned over time"></canvas><div class="tip" id="chartTip"></div></div>
+          <div class="chartwrap"><canvas id="burnChart" aria-label="Cumulative $LiLa.GOV burned over time"></canvas><div class="tip" id="chartTip"></div></div>
           <p class="fine" id="chartNote">Hover or touch the line for the exact burn at that moment.</p>
         </div>
       </div>
@@ -420,10 +420,10 @@
       <div class="eyebrow">How it works</div>
       <h2>From trade to ash in five steps</h2>
       <div class="steps">
-        <div class="step"><h3>A trade happens</h3><p>Anyone buys or sells $LIBERTY on pump.fun. On the bonding curve, 0.300 % of every trade is the creator fee.</p><a class="src" href="https://pump.fun/docs/fees" target="_blank" rel="noopener">Source: pump.fun/docs/fees (20 May 2026)</a></div>
+        <div class="step"><h3>A trade happens</h3><p>Anyone buys or sells $LiLa.GOV on pump.fun. On the bonding curve, 0.300 % of every trade is the creator fee.</p><a class="src" href="https://pump.fun/docs/fees" target="_blank" rel="noopener">Source: pump.fun/docs/fees (20 May 2026)</a></div>
         <div class="step"><h3>The fee lands in the vault</h3><p>Creator fees accumulate in the coin's on-chain creator vault. Nobody spends them by hand.</p></div>
         <div class="step"><h3>The Director collects and splits</h3><p>Every minute, as soon as the burn budget covers the minimum of 0.02 SOL, the bot collects the vault. Half goes to the buy-and-burn budget, half is paid to the lab treasury wallet. Both with receipts.</p></div>
-        <div class="step"><h3>Buy on the open market</h3><p>The bot buys $LIBERTY at market price with the burn budget, like any other buyer.</p></div>
+        <div class="step"><h3>Buy on the open market</h3><p>The bot buys $LiLa.GOV at market price with the burn budget, like any other buyer.</p></div>
         <div class="step"><h3>Burn, with receipt</h3><p>The bought tokens are burned with the standard SPL burn instruction. The signature is posted to the feed.</p></div>
       </div>
     </div>
@@ -494,11 +494,11 @@
       <div class="eyebrow">Proof</div>
       <h2>Don't trust the lab. Check the chain.</h2>
       <div class="grid two">
-        <div class="card"><h3>Token mint</h3><p>The $LIBERTY contract address. Supply is read from this mint; watch it fall.</p><div class="addr"><code id="mintAddr" class="tba">Revealed at launch</code><button id="copyMint" disabled>Copy</button></div></div>
+        <div class="card"><h3>Token mint</h3><p>The $LiLa.GOV contract address. Supply is read from this mint; watch it fall.</p><div class="addr"><code id="mintAddr" class="tba">Revealed at launch</code><button id="copyMint" disabled>Copy</button></div></div>
         <div class="card"><h3>Director wallet</h3><p>The creator wallet that collects fees, buys and burns. Every burn receipt comes from here.</p><div class="addr"><code id="walletAddr" class="tba">Revealed at launch</code><button id="copyWallet" disabled>Copy</button></div></div>
-        <div class="card"><h3>Lab treasury wallet</h3><p>Receives the lab's half of every collection and holds the team's own $LIBERTY. Public, so you can see exactly what the team earns and holds.</p><div class="addr"><code id="treasuryAddr" class="tba">Revealed at launch</code><button id="copyTreasury" disabled>Copy</button></div></div>
+        <div class="card"><h3>Lab treasury wallet</h3><p>Receives the lab's half of every collection and holds the team's own $LiLa.GOV. Public, so you can see exactly what the team earns and holds.</p><div class="addr"><code id="treasuryAddr" class="tba">Revealed at launch</code><button id="copyTreasury" disabled>Copy</button></div></div>
         <div class="card"><h3>Source code</h3><p>The bot, its rule engine and its tests are public. Read the rules yourself.</p><div class="addr"><code id="repoAddr" class="tba">Repository link published at launch</code></div></div>
-        <div class="card"><h3>Verify a burn in three steps</h3><ol class="verify"><li>Open any receipt from the feed on Solscan.</li><li>Check the instruction: <span class="mono">BurnChecked</span> on the $LIBERTY mint from the Director wallet.</li><li>Open the mint page and compare the current supply with 1,000,000,000.</li></ol></div>
+        <div class="card"><h3>Verify a burn in three steps</h3><ol class="verify"><li>Open any receipt from the feed on Solscan.</li><li>Check the instruction: <span class="mono">BurnChecked</span> on the $LiLa.GOV mint from the Director wallet.</li><li>Open the mint page and compare the current supply with 1,000,000,000.</li></ol></div>
         <div class="card"><h3>Spread the word</h3><p>Send people to the furnace, not to a promise.</p><div class="share"><a class="btn small solid" id="shareX" href="#" target="_blank" rel="noopener">Post on X</a><button class="btn small" id="copyLink">Copy link</button></div></div>
       </div>
     </div>
@@ -509,7 +509,7 @@
       <div class="eyebrow">Plain answers</div>
       <h2>Questions people ask</h2>
       <details open><summary>Does burning make the price go up?</summary><p>Burning reduces the supply. Price is set by buyers and sellers, and nothing here guarantees anything. Liberty Labs is a memecoin. You can lose everything you put in.</p></details>
-      <details><summary>How much actually gets burned?</summary><p>Half of what the fees bring in. On the bonding curve the creator fee is 0.300 % of each trade (pump.fun docs, 20 May 2026). $100,000 of volume therefore buys and burns about $150 of $LIBERTY and pays about $150 to the lab. After graduation to PumpSwap the creator fee depends on market cap, between 0.050 % and 0.950 %.</p></details>
+      <details><summary>How much actually gets burned?</summary><p>Half of what the fees bring in. On the bonding curve the creator fee is 0.300 % of each trade (pump.fun docs, 20 May 2026). $100,000 of volume therefore buys and burns about $150 of $LiLa.GOV and pays about $150 to the lab. After graduation to PumpSwap the creator fee depends on market cap, between 0.050 % and 0.950 %.</p></details>
       <details><summary>Where does the other half go?</summary><p>To the lab treasury wallet, shown under Proof. It pays for servers, artwork, marketing and the people running the lab. Every payout is an on-chain transfer you can see in the feed. Nothing is hidden and nothing is promised.</p></details>
       <details><summary>Who controls the wallets?</summary><p>The Director bot holds the creator wallet key on a server; the treasury wallet belongs to the team. The bot's rules are public and tested, its code has no sell function, and every action leaves a receipt. This is still a person's server, not a smart contract. Judge it by the receipts.</p></details>
       <details><summary>How often does it burn?</summary><p>Every minute, as long as the burn budget covers at least 0.02 SOL. Below that, network fees would eat a large part of the burn, so the bot waits until enough has come in. With little volume that can mean hours between burns; with heavy volume it burns every minute. The countdown in the corner shows the next check.</p></details>
@@ -543,7 +543,7 @@
   <button class="pill icon close" id="sheetClose" aria-label="Close">×</button>
   <div class="eyebrow">How it works</div>
   <h2 id="sheetTitle">One coin. One furnace. One direction.</h2>
-  <p class="lede" style="font-size:16px">Half of every creator fee buys $LIBERTY back and burns it; the other half pays the lab. The Director decides <em>when</em> within fixed rules; it never decides <em>whether</em>. It burns only what it buys with fees.</p>
+  <p class="lede" style="font-size:16px">Half of every creator fee buys $LiLa.GOV back and burns it; the other half pays the lab. The Director decides <em>when</em> within fixed rules; it never decides <em>whether</em>. It burns only what it buys with fees.</p>
   <div class="grid two" style="margin-top:16px">
     <div class="card"><div class="k">Every minute</div><h3>Ritual feed</h3><p>Collect the vault, split, buy, burn, as soon as the budget covers 0.02 SOL. No waiting for the hour.</p></div>
     <div class="card"><div class="k">Price −15 % in 1 h</div><h3>Dip feed</h3><p>Red candle? The furnace eats extra. Once per 5 min at most.</p></div>
@@ -586,7 +586,7 @@
   const reduceMotion = matchMedia('(prefers-reduced-motion: reduce)').matches;
   const escapeHtml = (s) => String(s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 
-  const FALLBACK = { mode: 'simulation', symbol: 'LIBERTY', totalSupply: 1e9, supplyNow: 1e9, burnedTokens: 0, feesFedSol: 0, feesCollectedSol: 0, labShareSol: 0, labPaidOutSol: 0, burnCount: 0, mcapUsd: null, devBag: { tokens: 0, burned: 0, tranchesDone: [] }, lastFeedAt: 0, nextRitualAt: 0, log: [],
+  const FALLBACK = { mode: 'simulation', symbol: 'LiLa.GOV', totalSupply: 1e9, supplyNow: 1e9, burnedTokens: 0, feesFedSol: 0, feesCollectedSol: 0, labShareSol: 0, labPaidOutSol: 0, burnCount: 0, mcapUsd: null, devBag: { tokens: 0, burned: 0, tranchesDone: [] }, lastFeedAt: 0, nextRitualAt: 0, log: [],
     rules: { feedShareOfFees: 0.5, labShareOfFees: 0.5, cycleMinutes: 60, dipTriggerPct: 15, surgeSol: 1, minFeedSol: 0.02, maxFeedSolPerCycle: 5, devBagBurn: { enabled: false, tranches: [] } } };
 
   const app = { state: null, feedLimit: 12, filter: 'all', replayIndex: 0, displayBurned: 0, chart: null };
@@ -765,7 +765,7 @@
     const s = app.state; if (!s) return; const msgs = [];
     const sceneStatus = window.LL_SCENE?.status?.(); if (sceneStatus) msgs.push(...sceneStatus);
     if (s.vaultSol > 0) msgs.push(`${s.vaultSol.toFixed(3)} SOL waiting in the vault · half of it will burn`);
-    if (s.log[0]) { const e = s.log[0]; const mins = Math.max(0, Math.round((Date.now() - e.ts) / 60000)); msgs.push(`Last burn ${mins < 60 ? mins + ' min' : Math.round(mins / 60) + ' h'} ago · ${fmt(e.tokens)} $LIBERTY by ${e.scientist || 'the Director'}`); }
+    if (s.log[0]) { const e = s.log[0]; const mins = Math.max(0, Math.round((Date.now() - e.ts) / 60000)); msgs.push(`Last burn ${mins < 60 ? mins + ' min' : Math.round(mins / 60) + ' h'} ago · ${fmt(e.tokens)} $LiLa.GOV by ${e.scientist || 'the Director'}`); }
     msgs.push(`Next ritual feed in ${$('nextFeed').textContent}`);
     if (!msgs.length) return; $('nowText').textContent = msgs[nowIdx++ % msgs.length];
   }
@@ -776,7 +776,7 @@
   let toastTimer = 0;
   function burnEvent(entry, isLive) {
     $('toastTitle').textContent = isLive ? `Burn #${fmt(entry.burnCountTotal || app.state.burnCount)} · ${entry.reason === 'devburn' ? 'team stake' : entry.reason}` : `Replay · burn #${fmt(entry.burnCountTotal || '')} · simulated`;
-    $('toastText').textContent = `${fmt(entry.tokens)} $LIBERTY · ${entry.scientist || 'Director'} · ${entry.note || ''}`;
+    $('toastText').textContent = `${fmt(entry.tokens)} $LiLa.GOV · ${entry.scientist || 'Director'} · ${entry.note || ''}`;
     const t = $('toast'); t.classList.add('show'); clearTimeout(toastTimer); toastTimer = setTimeout(() => t.classList.remove('show'), 6500);
     if (!isLive) { const el = $('burnedBig'); el.classList.remove('pulse'); void el.offsetWidth; el.classList.add('pulse'); }
     window.LL_SCENE?.bigBurn(); audio.burn();
@@ -862,8 +862,8 @@
   $('moreBtn').addEventListener('click', () => { app.feedLimit += 20; renderFeed(false); audio.click(); });
   $('filters').addEventListener('click', e => { const b = e.target.closest('button[data-f]'); if (!b) return; app.filter = b.dataset.f; app.feedLimit = 12; document.querySelectorAll('#filters button').forEach(x => x.classList.toggle('active', x === b)); renderFeed(false); audio.click(); });
   $('copyLink').addEventListener('click', () => copy(location.href, $('copyLink')));
-  $('shareX').href = 'https://twitter.com/intent/tweet?text=' + encodeURIComponent('Liberty Labs: half of every $LIBERTY trading fee buys back supply and burns it, live, with receipts. Watch the furnace: ' + location.href);
-  document.addEventListener('ll-state', () => { const m = app.state?.mint; if (m) $('shareX').href = 'https://twitter.com/intent/tweet?text=' + encodeURIComponent('Liberty Labs: half of every $LIBERTY trading fee buys back supply and burns it, live, with receipts. Watch the furnace: ' + location.href + '\nCA: ' + m); });
+  $('shareX').href = 'https://twitter.com/intent/tweet?text=' + encodeURIComponent('Liberty Labs: half of every $LiLa.GOV trading fee buys back supply and burns it, live, with receipts. Watch the furnace: ' + location.href);
+  document.addEventListener('ll-state', () => { const m = app.state?.mint; if (m) $('shareX').href = 'https://twitter.com/intent/tweet?text=' + encodeURIComponent('Liberty Labs: half of every $LiLa.GOV trading fee buys back supply and burns it, live, with receipts. Watch the furnace: ' + location.href + '\nCA: ' + m); });
   $('photo').addEventListener('click', () => $('photo').classList.remove('open'));
 
   document.querySelectorAll('.dock button[data-go]').forEach(b => b.addEventListener('click', () => { const id = b.dataset.go; if (id === 'sound') return; audio.click(); document.getElementById(id)?.scrollIntoView({ behavior: reduceMotion ? 'auto' : 'smooth', block: 'start' }); }));
@@ -962,7 +962,7 @@
   function makeChartTexture(seed) {
     const c = document.createElement('canvas'); c.width = 512; c.height = 256; const x = c.getContext('2d'); x.fillStyle = '#0a1226'; x.fillRect(0, 0, 512, 256);
     x.strokeStyle = 'rgba(127,168,255,.15)'; for (let i = 0; i < 6; i++) { x.beginPath(); x.moveTo(0, i * 48); x.lineTo(512, i * 48); x.stroke(); }
-    x.fillStyle = '#7fa8ff'; x.font = '600 22px "JetBrains Mono", monospace'; x.letterSpacing = '3px'; x.fillText('$LIBERTY / SOL', 18, 34); x.fillStyle = '#58d68d'; x.fillText('LIVE', 430, 34);
+    x.fillStyle = '#7fa8ff'; x.font = '600 22px "JetBrains Mono", monospace'; x.letterSpacing = '3px'; x.fillText('$LiLa.GOV / SOL', 18, 34); x.fillStyle = '#58d68d'; x.fillText('LIVE', 430, 34);
     let p = 140; for (let i = 0; i < 40; i++) { const o = p; p = Math.max(60, Math.min(220, p + (Math.sin(i * 1.7 + seed) + Math.cos(i * 0.9 + seed * 2)) * 14)); const up = p < o; x.fillStyle = up ? '#58d68d' : '#ff5d73'; x.fillRect(20 + i * 12, Math.min(o, p), 8, Math.max(3, Math.abs(p - o))); x.fillRect(23 + i * 12, Math.min(o, p) - 6, 2, Math.abs(p - o) + 12); }
     const t = new T.CanvasTexture(c); t.encoding = T.sRGBEncoding; return t;
   }
@@ -1033,7 +1033,7 @@
     if (screenFlash > 0) { c.fillStyle = `rgba(255,122,26,${screenFlash * 0.55})`; c.fillRect(0, 0, 1024, 512); }
     c.fillStyle = '#7fa8ff'; c.font = '600 30px "JetBrains Mono", monospace'; c.letterSpacing = '6px'; c.fillText('LIBERTY LABS  ·  ' + (s.mode === 'live' ? 'LIVE' : s.mode === 'pending' ? 'COIN LIVE · WARMING UP' : 'SIMULATION'), 48, 74);
     c.fillStyle = '#ffffff'; c.font = '900 190px "Big Shoulders Display", Impact, sans-serif'; c.letterSpacing = '0px'; c.fillText(fmt(s.burnedTokens), 44, 290);
-    c.fillStyle = '#ffb15c'; c.font = '600 34px "JetBrains Mono", monospace'; c.letterSpacing = '4px'; c.fillText('$LIBERTY BURNED  ·  ' + fmtPct(s.burnedTokens / s.totalSupply * 100) + ' OF SUPPLY', 48, 352);
+    c.fillStyle = '#ffb15c'; c.font = '600 34px "JetBrains Mono", monospace'; c.letterSpacing = '4px'; c.fillText('$LiLa.GOV BURNED  ·  ' + fmtPct(s.burnedTokens / s.totalSupply * 100) + ' OF SUPPLY', 48, 352);
     c.fillStyle = '#c3c6d1'; c.font = '500 30px "JetBrains Mono", monospace'; c.fillText('BURNS ' + fmt(s.burnCount) + '   ·   ' + fmtSol(s.feesFedSol) + ' SOL BURNED   ·   ' + fmtSol(s.labShareSol) + ' SOL LAB   ·   NEXT ' + $('nextFeed').textContent, 48, 430);
     const p = Math.min(1, (s.burnedTokens / s.totalSupply) / 0.05); c.fillStyle = 'rgba(255,255,255,.12)'; c.fillRect(48, 462, 928, 14); c.fillStyle = '#ff7a1a'; c.fillRect(48, 462, 928 * p, 14); screenTex.needsUpdate = true;
   }
