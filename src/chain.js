@@ -3,7 +3,7 @@
 // Interface sources (official repo pump-fun/pump-fun-skills, as of April 2026):
 //   POST https://fun-block.pump.fun/agents/collect-fees   → tx to collect creator fees (permissionless)
 //   POST https://fun-block.pump.fun/agents/swap           → tx to buy (bonding curve OR PumpSwap, detected automatically)
-//   GET  https://frontend-api-v3.pump.fun/coins-v2/{mint} → coin data (server-side only, CORS-protected)
+//   GET  https://api.dexscreener.com/tokens/v1/solana/{mint} → market cap (fallback: frontend-api-v3.pump.fun, often 403 for servers)
 //   Creator vault PDA: seeds ["creator-vault", creator] in the Pump program; rent reserve 890,880 lamports
 //
 // The burn itself is a plain SPL token instruction (burnChecked). There is deliberately NO sell function here.
@@ -16,6 +16,7 @@ import bs58 from 'bs58';
 
 const API = 'https://fun-block.pump.fun';
 const COIN_API = 'https://frontend-api-v3.pump.fun/coins-v2';
+const DEX_API = 'https://api.dexscreener.com/tokens/v1/solana';
 const VAULT_RENT_LAMPORTS = 890_880;
 
 export function loadKeypair(path) {
@@ -63,7 +64,16 @@ export function makeChain({ rpcUrl, keypair, mint, cfg, log = console }) {
     return total / LAMPORTS_PER_SOL;
   }
 
+  /** Market data. DexScreener first (server-friendly), pump.fun's frontend API as fallback (blocks most servers with 403). */
   async function coinInfo() {
+    try {
+      const r = await fetch(`${DEX_API}/${mint}`, { headers: { accept: 'application/json' } });
+      if (r.ok) {
+        const pairs = await r.json();
+        const p = Array.isArray(pairs) ? (pairs.find(x => x.dexId === 'pumpswap') || pairs[0]) : null;
+        if (p) return { mcapUsd: num(p.marketCap ?? p.fdv), graduated: p.dexId === 'pumpswap', name: p.baseToken?.name, symbol: p.baseToken?.symbol };
+      } else log.warn?.(`dexscreener HTTP ${r.status}`);
+    } catch (e) { log.warn?.('dexscreener failed:', e.message); }
     try {
       const r = await fetch(`${COIN_API}/${mint}`, { headers: { accept: 'application/json', 'user-agent': 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/128.0 Safari/537.36' } });
       if (!r.ok) { log.warn?.(`coin api HTTP ${r.status}`); return null; }
