@@ -60,7 +60,7 @@ test('isDip: edge cases', () => {
 });
 
 test('clampFeed: below minimum → 0, above maximum → maximum', () => {
-  assert.equal(clampFeed(0.01, cfg), 0);
+  assert.equal(clampFeed(cfg.minFeedSol / 2, cfg), 0);
   assert.equal(clampFeed(99, cfg), cfg.maxFeedSolPerCycle);
   assert.equal(clampFeed(NaN, cfg), 0);
 });
