@@ -1,4 +1,4 @@
-// config.js – lädt director.config.json und die Umgebungsvariablen (.env).
+// config.js – loads director.config.json and the environment variables (.env).
 import { readFileSync, existsSync } from 'node:fs';
 import { resolve } from 'node:path';
 
@@ -19,7 +19,7 @@ export function loadConfig(root = process.cwd()) {
   return { cfg, env };
 }
 
-/** Minimaler .env-Loader (KEY=VALUE, # Kommentare), ohne Zusatzpaket. */
+/** Minimal .env loader (KEY=VALUE, # comments), no extra package. */
 function loadDotEnv(path) {
   if (!existsSync(path)) return;
   for (const raw of readFileSync(path, 'utf8').split('\n')) {
@@ -34,11 +34,11 @@ function loadDotEnv(path) {
   }
 }
 
-/** Prüft, ob alles für den Live-Betrieb da ist. Gibt Liste fehlender Dinge zurück. */
+/** Checks whether everything for live mode is present. Returns the list of missing items. */
 export function missingForLive(env) {
   const missing = [];
   if (!env.rpcUrl) missing.push('SOLANA_RPC_URL');
   if (!env.mint) missing.push('MINT');
-  if (!env.keypairPath && !process.env.KEYPAIR_BASE58) missing.push('KEYPAIR_PATH oder KEYPAIR_BASE58');
+  if (!env.keypairPath && !process.env.KEYPAIR_BASE58) missing.push('KEYPAIR_PATH or KEYPAIR_BASE58');
   return missing;
 }

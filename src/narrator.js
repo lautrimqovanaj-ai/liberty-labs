@@ -1,8 +1,8 @@
-// narrator.js – der «Director» spricht. Die KI schreibt nur den Kommentar zu einem Burn,
-// der bereits nach den Regeln passiert ist. Sie entscheidet nichts über Geld.
+// narrator.js – the "Director" speaks. The AI only writes the log line for a burn that
+// has already happened according to the rules. It never decides anything about money.
 //
-// mode "auto": Claude-API, wenn ANTHROPIC_API_KEY gesetzt ist – sonst Vorlagen.
-// Der Text ist immer auf 160 Zeichen begrenzt, ohne Preisversprechen.
+// mode "auto": Claude API when ANTHROPIC_API_KEY is set – otherwise templates.
+// The text is always capped in length and never promises anything about price.
 
 const SCIENTISTS = ['Kofi Adeyemi', 'Yuki Nakamura', '"Big Sal" Moreno', 'Dr. Ada Lindqvist', 'Chief Kowalski'];
 
@@ -49,7 +49,7 @@ function fill(t, e) {
 }
 
 /**
- * Kommentar erzeugen. Bei Claude-API-Fehlern immer Vorlage – der Bot bleibt nie hängen.
+ * Produce the log line. On any Claude API error fall back to a template – the bot never stalls.
  */
 export async function narrate(entry, { apiKey, model, mode = 'auto', rand = Math.random } = {}) {
   const fallback = templateNote(entry, rand);

@@ -1,5 +1,5 @@
-// server.js – liefert die Website (public/) und state.json aus dem gleichen Prozess wie der Bot.
-// Damit braucht es keinen zweiten Host: eine Railway/Render/VPS-Instanz = Bot + Website + Live-Daten.
+// server.js – serves the website (public/) and state.json from the same process as the bot.
+// No second host needed: one Railway/Render/VPS instance = bot + website + live data.
 import { createServer } from 'node:http';
 import { readFile, stat } from 'node:fs/promises';
 import { extname, join, normalize, resolve } from 'node:path';

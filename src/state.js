@@ -1,4 +1,4 @@
-// state.js – der öffentliche Zustand (public/state.json), den die Website liest.
+// state.js – the public state (public/state.json) that the website reads.
 import { readFileSync, writeFileSync, mkdirSync, existsSync, renameSync } from 'node:fs';
 import { dirname, resolve } from 'node:path';
 
@@ -11,17 +11,17 @@ export function emptyState(cfg, mode) {
     updatedAt: 0,
     startedAt: 0,
     totalSupply: cfg.totalSupply,
-    supplyNow: cfg.totalSupply, // aus getTokenSupply (live) bzw. simuliert
-    burnedTokens: 0,            // Summe aller Burns durch den Director (Fees + Dev-Bag)
-    feesFedSol: 0,              // SOL, die in Rückkäufe geflossen sind
-    feesCollectedSol: 0,        // alle eingesammelten Creator-Fees
-    feedBudgetSol: 0,           // im Wallet zurückgelegt für Burns
-    labShareSol: 0,             // Lab-Anteil (Creator) insgesamt
-    labPaidOutSol: 0,           // davon an TREASURY_WALLET überwiesen
+    supplyNow: cfg.totalSupply, // from getTokenSupply (live) or simulated
+    burnedTokens: 0,            // total of all burns by the Director
+    feesFedSol: 0,              // SOL that went into buybacks
+    feesCollectedSol: 0,        // all collected creator fees
+    feedBudgetSol: 0,           // set aside in the wallet for burns
+    labShareSol: 0,             // lab share (creator) in total
+    labPaidOutSol: 0,           // of which transferred to TREASURY_WALLET
     treasuryWallet: null,
     burnCount: 0,
     devBag: { tokens: 0, burned: 0, tranchesDone: [] },
-    teamTokens: 0,              // Token im Director-Wallet, die nicht vom Bot gekauft wurden (Team-Anteil, wird nie verbrannt)
+    teamTokens: 0,              // tokens in the Director wallet that the bot did not buy (team allocation, never burned)
     priceSol: null,
     mcapUsd: null,
     vaultSol: 0,
@@ -29,10 +29,10 @@ export function emptyState(cfg, mode) {
     lastFeedAt: 0,
     lastDipFeedAt: 0,
     nextRitualAt: 0,
-    priceHistory: [],           // [{ts, price}] letzte ~24 h
-    log: [],                    // neueste zuerst
-    milestones: [],             // erreichte Meilensteine [{id,label,ts}]
-    rules: {                    // Auszug für die Website
+    priceHistory: [],           // [{ts, price}] last ~24 h
+    log: [],                    // newest first
+    milestones: [],             // reached milestones [{id,label,ts}]
+    rules: {                    // excerpt for the website
       feedShareOfFees: cfg.feedShareOfFees,
       labShareOfFees: Math.round((1 - cfg.feedShareOfFees) * 1000) / 1000,
       cycleMinutes: cfg.cycleMinutes,
@@ -56,12 +56,12 @@ export function saveState(path, state, maxLog = 500) {
   const p = resolve(path);
   mkdirSync(dirname(p), { recursive: true });
   const out = { ...state, log: state.log.slice(0, maxLog) };
-  // atomar schreiben, damit die Website nie eine halbe Datei liest
+  // write atomically so the website never reads a half-written file
   writeFileSync(p + '.tmp', JSON.stringify(out, null, 2));
   renameSync(p + '.tmp', p);
 }
 
-/** Preisverlauf pflegen und den Preis vor ~1 h zurückgeben. */
+/** Maintain the price history and return the price ~1 h ago. */
 export function pushPrice(state, ts, price, keepMs = 24 * 3600 * 1000) {
   if (price != null && Number.isFinite(price)) state.priceHistory.push({ ts, price });
   state.priceHistory = state.priceHistory.filter(p => ts - p.ts <= keepMs);

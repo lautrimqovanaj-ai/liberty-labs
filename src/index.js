@@ -1,10 +1,10 @@
 #!/usr/bin/env node
-// index.js – der Director. Ablauf pro Takt:
-//   Zustand lesen → Regeln entscheiden → (Fees einsammeln → kaufen → verbrennen) → Beleg ins Log → state.json schreiben.
+// index.js – the Director. Every tick:
+//   read state → rules decide → (collect fees → pay lab share → buy → burn) → receipt into the log → write state.json.
 //
-//   npm start            Live-Betrieb, alle POLL_MINUTES (Standard 5) ein Takt
-//   npm run once         genau ein Takt (z. B. per Cron)
-//   npm run simulate     72 Stunden offline simulieren → public/state.json (mode: "simulation")
+//   npm start            live mode, one tick every POLL_MINUTES (default 1); also serves public/ (website + state.json)
+//   npm run once         exactly one tick (e.g. from cron)
+//   npm run simulate     simulate 72 hours offline → public/state.json (mode: "simulation")
 
 import { loadConfig, missingForLive } from './config.js';
 import { existsSync } from 'node:fs';
@@ -23,16 +23,16 @@ main().catch(e => { console.error('FATAL', e); process.exit(1); });
 async function main() {
   if (args.simulate) return simulate(Number(args.hours || 72));
 
-  // Website + state.json immer ausliefern (auch vor dem Launch), damit der Link vor dem Coin existiert.
+  // Always serve the website + state.json (even before launch), so the link exists before the coin does.
   if (!args.once && process.env.SERVE !== '0') startServer({ root: 'public' });
 
   const missing = missingForLive(env);
   if (missing.length) {
-    console.error(`Noch nicht live – es fehlen: ${missing.join(', ')} (siehe .env.example). Die Website läuft im Vorschau-Modus.`);
+    console.error(`Not live yet – missing: ${missing.join(', ')} (see .env.example). The website runs in preview mode.`);
     if (args.once) process.exit(2);
-    // Vorschau-Modus: Simulationsdaten bereitstellen, falls noch keine state.json da ist
+    // Preview mode: provide simulation data if there is no state.json yet
     if (!existsSync(statePath)) await simulate(72);
-    return; // Server läuft weiter; nach Setzen von MINT neu starten
+    return; // the server keeps running; restart after setting MINT
   }
   const { makeChain, loadKeypair } = await import('./chain.js');
   const keypair = loadKeypair(env.keypairPath);
@@ -52,7 +52,7 @@ async function main() {
   } while (true);
 }
 
-/** Ein Takt. Gibt die ausgeführten Aktionen zurück. */
+/** One tick. Returns the executed actions. */
 export async function tick(chain, state, now, rand) {
   const snap = await chain.snapshot();
   const price1hAgo = pushPrice(state, now, snap.priceProxy);
@@ -70,7 +70,7 @@ export async function tick(chain, state, now, rand) {
     if (a.type === 'devburn') await doDevBurn(chain, state, now, a, rand);
   }
 
-  // Meilensteine erkennen und ins Log schreiben – die Website feiert sie automatisch
+  // Detect milestones and write them to the log – the website celebrates them automatically
   for (const m of newMilestones(state, state.milestones.map(x => x.id))) {
     const entry = { ts: now, type: 'milestone', reason: 'milestone', id: m.id, label: m.label, tokens: 0, sol: 0, symbol: cfg.tokenSymbol, scientist: 'Chief Kowalski', mode: chain.mode, burnCountTotal: state.burnCount, burnedPct: round(state.burnedTokens / state.totalSupply * 100, 3), sigs: {}, note: `Milestone reached: ${m.label}. Logged, lit, and on the record.` };
     state.milestones.push({ id: m.id, label: m.label, ts: now });
@@ -83,7 +83,7 @@ export async function tick(chain, state, now, rand) {
 
 async function doFeed(chain, state, now, a, ctx, rand) {
   const sigs = {};
-  if (a.collect && state.vaultSol > 0) {                                      // 1) Fees ins Wallet, dann aufteilen
+  if (a.collect && state.vaultSol > 0) {                                      // 1) fees into the wallet, then split
     sigs.collect = await chain.collectFees();
     const collected = state.vaultSol;
     const burnPart = collected * cfg.feedShareOfFees;
@@ -92,17 +92,17 @@ async function doFeed(chain, state, now, a, ctx, rand) {
     state.feedBudgetSol += burnPart;
     state.labShareSol += labPart;
     state.vaultSol = 0;
-    if (labPart > 0.001 && state.treasuryWallet) {                             //    Lab-Anteil sofort auszahlen
+    if (labPart > 0.001 && state.treasuryWallet) {                             //    pay out the lab share immediately
       sigs.payout = await chain.transferSol(state.treasuryWallet, labPart);
       state.labPaidOutSol += labPart;
     }
   }
   const sol = round(Math.min(a.sol, state.feedBudgetSol), 6);
   if (sol < cfg.minFeedSol) { log(`feed skipped – budget ${sol} SOL below minimum`); return; }
-  const { signature: buySig, tokensBought } = await chain.buy(sol);            // 2) kaufen
+  const { signature: buySig, tokensBought } = await chain.buy(sol);            // 2) buy
   sigs.buy = buySig;
-  if (tokensBought <= 0) throw new Error('Kauf brachte 0 Token – Burn abgebrochen');
-  sigs.burn = await chain.burn(tokensBought);                                  // 3) verbrennen
+  if (tokensBought <= 0) throw new Error('Buy returned 0 tokens – burn aborted');
+  sigs.burn = await chain.burn(tokensBought);                                  // 3) burn
   state.feedBudgetSol = Math.max(0, round(state.feedBudgetSol - sol, 9));
   a.sol = sol;
 
@@ -144,7 +144,7 @@ async function doDevBurn(chain, state, now, a, rand) {
   await webhook(entry);
 }
 
-/** Offline-Simulation: `hours` Stunden im Schnelldurchlauf, reproduzierbar (seed). */
+/** Offline simulation: `hours` hours in fast forward, reproducible (seed). */
 async function simulate(hours) {
   const rand = rng(11);
   const chain = makeMockChain({ cfg, seed: 7, devBagTokens: 20_000_000 });
@@ -156,7 +156,7 @@ async function simulate(hours) {
     const now = t0 + (h + 1) * 3600_000;
     await tick(chain, state, now, rand);
   }
-  console.log(`Simulation fertig: ${state.burnCount} burns, ${Math.round(state.burnedTokens).toLocaleString('en-US')} ${cfg.tokenSymbol} verbrannt (${(state.burnedTokens / state.totalSupply * 100).toFixed(3)} %), ${state.feesFedSol.toFixed(3)} SOL gefüttert, ${state.labShareSol.toFixed(3)} SOL Lab-Anteil → ${statePath}`);
+  console.log(`Simulation done: ${state.burnCount} burns, ${Math.round(state.burnedTokens).toLocaleString('en-US')} ${cfg.tokenSymbol} burned (${(state.burnedTokens / state.totalSupply * 100).toFixed(3)} %), ${state.feesFedSol.toFixed(3)} SOL fed, ${state.labShareSol.toFixed(3)} SOL lab share → ${statePath}`);
 }
 
 async function webhook(entry) {
