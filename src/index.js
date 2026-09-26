@@ -113,9 +113,11 @@ async function doFeed(chain, state, now, a, ctx, rand) {
     state.feedBudgetSol += burnPart;
     state.labShareSol += labPart;
     state.vaultSol = 0;
-    if (labPart > 0.001 && state.treasuryWallet) {                             //    pay out the lab share immediately
+    if (labPart > 0.001 && state.treasuryWallet && state.treasuryWallet !== chain.owner) {   //    pay out the lab share immediately
       sigs.payout = await chain.transferSol(state.treasuryWallet, labPart);
       state.labPaidOutSol += labPart;
+    } else if (labPart > 0 && state.treasuryWallet === chain.owner) {
+      state.labPaidOutSol += labPart;                                          //    treasury is the creator wallet itself: the share simply stays there
     }
   }
   const sol = round(Math.min(a.sol, state.feedBudgetSol), 6);
