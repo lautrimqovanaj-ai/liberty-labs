@@ -706,17 +706,27 @@
   $('calcRange').addEventListener('input', renderCalc);
 
   // chart: cumulative burn (single series, no legend needed)
-  function chartData() { const s = app.state || FALLBACK; const asc = [...s.log].sort((a, b) => a.ts - b.ts); let cum = 0; return asc.map(e => { cum += e.tokens || 0; return { ts: e.ts, cum, tokens: e.tokens || 0, who: e.scientist || 'Director', reason: e.type === 'devburn' ? 'team stake' : e.reason }; }); }
+  function chartData() {
+    const s = app.state || FALLBACK; const asc = [...s.log].sort((a, b) => a.ts - b.ts); let cum = 0;
+    const pts = asc.map(e => { cum += e.tokens || 0; return { ts: e.ts, cum, tokens: e.tokens || 0, who: e.scientist || 'Director', reason: e.type === 'devburn' ? 'team stake' : e.reason }; });
+    if (!pts.length) return pts;
+    // anchor the line at the lab start (0 burned) and at "now", so even a single burn is a real chart
+    const start = Math.min(s.startedAt || pts[0].ts, pts[0].ts - 60_000);
+    pts.unshift({ ts: start, cum: 0, tokens: 0, who: 'Lab opens', reason: 'nothing burned yet', anchor: true });
+    const now = Math.max(Date.now(), pts[pts.length - 1].ts + 60_000);
+    pts.push({ ts: now, cum, tokens: 0, who: 'now', reason: 'waiting for fees', anchor: true });
+    return pts;
+  }
   function drawChart(hoverIdx = -1) {
     const c = $('burnChart'); const wrap = c.parentElement; const W = wrap.clientWidth, H = 260, dpr = Math.min(devicePixelRatio, 2);
     if (c.width !== W * dpr) { c.width = W * dpr; c.height = H * dpr; }
     const x = c.getContext('2d'); x.setTransform(dpr, 0, 0, dpr, 0, 0); x.clearRect(0, 0, W, H);
     const pts = chartData(); const css = getComputedStyle(document.documentElement); const ink2 = css.getPropertyValue('--ink2').trim(), mute = css.getPropertyValue('--mute').trim(), line = 'rgba(255,255,255,.08)', ember = css.getPropertyValue('--chart-ember').trim(), surface = css.getPropertyValue('--surface').trim();
     const padL = 56, padR = 18, padT = 14, padB = 30; const iw = W - padL - padR, ih = H - padT - padB;
-    if (pts.length < 2) { x.fillStyle = mute; x.font = '12px JetBrains Mono, monospace'; x.fillText('The chart draws itself after the first two burns.', padL, H / 2); app.chart = null; return; }
+    if (pts.length < 2) { x.fillStyle = mute; x.font = '12px JetBrains Mono, monospace'; x.textAlign = 'center'; x.fillText('The chart draws itself after the first burn.', W / 2, H / 2); x.textAlign = 'left'; app.chart = null; return; }
     const t0 = pts[0].ts, t1 = pts[pts.length - 1].ts; const maxV = pts[pts.length - 1].cum; const niceMax = niceCeil(maxV);
     const X = (ts) => padL + (ts - t0) / Math.max(1, t1 - t0) * iw, Y = (v) => padT + ih - v / niceMax * ih;
-    if (t1 - t0 > 0) $('chartSpan').textContent = Math.round((t1 - t0) / 3600000) + ' h';
+    if (t1 - t0 > 0) { const span = t1 - t0; $('chartSpan').textContent = span < 2 * 3600000 ? Math.max(1, Math.round(span / 60000)) + ' min' : span < 48 * 3600000 ? Math.round(span / 3600000) + ' h' : Math.round(span / 86400000) + ' days'; }
     // grid + y labels
     x.strokeStyle = line; x.lineWidth = 1; x.fillStyle = mute; x.font = '10px JetBrains Mono, monospace'; x.textAlign = 'right'; x.textBaseline = 'middle';
     for (let i = 0; i <= 3; i++) { const v = niceMax * i / 3, y = Y(v); x.beginPath(); x.moveTo(padL, y); x.lineTo(W - padR, y); x.stroke(); x.fillText(compact(v), padL - 8, y); }
@@ -735,7 +745,7 @@
   function niceCeil(v) { if (v <= 0) return 1; const p = Math.pow(10, Math.floor(Math.log10(v))); const m = v / p; const n = m <= 1 ? 1 : m <= 2 ? 2 : m <= 2.5 ? 2.5 : m <= 5 ? 5 : 10; return n * p; }
   (function chartHover() {
     const c = $('burnChart'), tip = $('chartTip');
-    const move = (e) => { if (!app.chart) return; const r = c.getBoundingClientRect(); const px = e.clientX - r.left; let best = 0, bd = 1e9; app.chart.pts.forEach((p, i) => { const d = Math.abs(app.chart.X(p.ts) - px); if (d < bd) { bd = d; best = i; } }); const p = app.chart.pts[best]; drawChart(best); tip.style.display = 'block'; tip.style.left = app.chart.X(p.ts) + 'px'; tip.style.top = (app.chart.Y(p.cum) - 6) + 'px'; tip.innerHTML = `<b>${new Date(p.ts).toLocaleString('en-GB', { day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit' })}</b><br>+${fmt(p.tokens)} · ${escapeHtml(p.who)} · ${p.reason}<br>total <b>${fmt(p.cum)}</b>`; };
+    const move = (e) => { if (!app.chart) return; const r = c.getBoundingClientRect(); const px = e.clientX - r.left; let best = 0, bd = 1e9; app.chart.pts.forEach((p, i) => { const d = Math.abs(app.chart.X(p.ts) - px); if (d < bd) { bd = d; best = i; } }); const p = app.chart.pts[best]; drawChart(best); tip.style.display = 'block'; tip.style.left = app.chart.X(p.ts) + 'px'; tip.style.top = (app.chart.Y(p.cum) - 6) + 'px'; tip.innerHTML = `<b>${new Date(p.ts).toLocaleString('en-GB', { day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit' })}</b><br>${p.anchor ? escapeHtml(p.who) + ' · ' + p.reason : '+' + fmt(p.tokens) + ' · ' + escapeHtml(p.who) + ' · ' + p.reason}<br>total <b>${fmt(p.cum)}</b>`; };
     c.addEventListener('pointermove', move); c.addEventListener('pointerdown', move);
     c.addEventListener('pointerleave', () => { tip.style.display = 'none'; drawChart(); });
     new ResizeObserver(() => drawChart()).observe(c.parentElement);
