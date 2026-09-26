@@ -1,11 +1,11 @@
 {
   "_note": "All rules of the Director bot. The AI must NOT change these values – only you, here in this file. Every number is a suggestion and can be changed freely.",
-  "tokenSymbol": "LIBERTY",
+  "tokenSymbol": "LiLa.GOV",
   "tokenDecimals": 6,
   "totalSupply": 1000000000,
   "feedShareOfFees": 0.5,
   "_note_split": "feedShareOfFees 0.5 = 50 % of every collected fee buys & burns, 50 % goes to TREASURY_WALLET (.env) as the lab share. Disclosed openly on the website.",
-  "minFeedSol": 0.02,
+  "minFeedSol": 0.005,
   "maxFeedSolPerCycle": 5,
   "reserveSol": 0.01,
   "cycleMinutes": 1,
