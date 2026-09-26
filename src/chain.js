@@ -65,8 +65,8 @@ export function makeChain({ rpcUrl, keypair, mint, cfg, log = console }) {
 
   async function coinInfo() {
     try {
-      const r = await fetch(`${COIN_API}/${mint}`, { headers: { accept: 'application/json' } });
-      if (!r.ok) return null;
+      const r = await fetch(`${COIN_API}/${mint}`, { headers: { accept: 'application/json', 'user-agent': 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/128.0 Safari/537.36' } });
+      if (!r.ok) { log.warn?.(`coin api HTTP ${r.status}`); return null; }
       const c = await r.json();
       return { mcapUsd: num(c.usd_market_cap), graduated: !!c.complete, name: c.name, symbol: c.symbol };
     } catch (e) { log.warn?.('coin api failed:', e.message); return null; }
