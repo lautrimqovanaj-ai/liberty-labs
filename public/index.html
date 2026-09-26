@@ -313,6 +313,7 @@
       <div class="row">
         <button class="btn primary" id="howBtn">How it works</button>
         <button class="btn" id="playBtn">Play</button>
+        <a class="btn solid" id="tradeBtn" href="#" target="_blank" rel="noopener" hidden>Trade on pump.fun</a>
       </div>
       <div class="row"><div class="pill ca" id="caPill"><span class="sym">$LIBERTY</span><span>CA</span><span id="caShort">revealed at launch</span><span class="sep"></span><button id="copyCa" type="button" disabled>Copy</button></div></div>
       <div class="row secondary"><a class="btn" href="#feed">Feed</a><a class="btn" href="#board">Board</a></div>
@@ -598,24 +599,25 @@
     let s = null;
     try { const r = await fetch(CONFIG.stateUrl + (first ? '' : '?t=' + Date.now()), { cache: 'no-store' }); if (r.ok) s = await r.json(); } catch (e) { /* fall back */ }
     if (!s) s = app.state || FALLBACK;
-    const prev = app.state; app.state = s; render(prev);
+    const prev = app.state; app.state = s; render(prev); document.dispatchEvent(new Event('ll-state'));
   }
 
   function render(prev) {
-    const s = app.state, r = s.rules || FALLBACK.rules, live = s.mode === 'live';
+    const s = app.state, r = s.rules || FALLBACK.rules, live = s.mode === 'live', pending = s.mode === 'pending';
     const burnedPct = s.burnedTokens / s.totalSupply * 100;
     const burnShare = r.feedShareOfFees ?? 0.5, labShare = 1 - burnShare;
 
     const sp = $('statusPill'); sp.classList.toggle('status-live', live); sp.classList.toggle('status-sim', !live);
-    $('statusText').textContent = live ? 'Lab online · live' : 'Pre-launch · simulation';
-    $('feedMode').innerHTML = live ? '<span class="chip live">Live · on-chain receipts</span>' : '<span class="chip sim">Simulated preview · real receipts appear at launch</span>';
-    $('footMode').textContent = live ? 'live from the Director bot' : 'simulated preview';
+    $('statusText').textContent = live ? 'Lab online · live' : pending ? 'Coin live · Director warming up' : 'Pre-launch · simulation';
+    $('feedMode').innerHTML = live ? '<span class="chip live">Live · on-chain receipts</span>' : pending ? '<span class="chip sim">Coin is live · the first burn appears here with its receipt</span>' : '<span class="chip sim">Simulated preview · real receipts appear at launch</span>';
+    $('footMode').textContent = live ? 'live from the Director bot' : pending ? 'coin live · Director not running yet · no burns recorded' : 'simulated preview';
+    const tb = $('tradeBtn'); if (s.mint) { tb.href = 'https://pump.fun/coin/' + s.mint; tb.hidden = false; }
 
     $('burnCount').textContent = fmt(s.burnCount); $('burnedPct').textContent = fmtPct(burnedPct); $('solFed').textContent = fmtSol(s.feesFedSol);
     $('cardBurned').textContent = fmt(s.burnedTokens); $('cardBurnedPct').textContent = fmtPct(burnedPct) + ' of ' + fmt(s.totalSupply);
     $('cardSol').textContent = fmtSol(s.feesFedSol); $('cardSolSub').textContent = `${Math.round(burnShare * 100)} % of ${fmtSol(s.feesCollectedSol || s.feesFedSol / burnShare)} SOL collected`;
     $('cardLab').textContent = fmtSol(s.labShareSol || 0); $('cardLabSub').textContent = s.labPaidOutSol ? `SOL · ${fmtSol(s.labPaidOutSol)} paid out with receipts` : 'SOL · lab share of collected fees';
-    $('cardMcap').textContent = s.mcapUsd ? fmtUsd(s.mcapUsd) : '—'; $('cardMcapSub').textContent = s.mcapUsd ? (live ? 'USD · from pump.fun data' : 'USD · simulated') : 'USD · available after launch';
+    $('cardMcap').textContent = s.mcapUsd ? fmtUsd(s.mcapUsd) : '—'; $('cardMcapSub').textContent = s.mcapUsd ? (live || pending ? 'USD · from pump.fun data' : 'USD · simulated') : 'USD · available after launch';
     $('splitA').style.width = (burnShare * 100) + '%'; $('splitB').style.width = (labShare * 100) + '%';
     $('splitAText').textContent = `${Math.round(burnShare * 100)} % buy & burn`; $('splitBText').textContent = `${Math.round(labShare * 100)} % lab treasury`;
 
@@ -634,7 +636,7 @@
     window.LL_SCENE?.setScreen(s);
   }
 
-  function setAddr(codeId, btnId, value) { if (!value) return; const code = $(codeId), btn = $(btnId); code.textContent = value; code.classList.remove('tba'); btn.disabled = false; btn.onclick = () => copy(value, btn); }
+  function setAddr(codeId, btnId, value) { if (!value) return; const code = $(codeId), btn = $(btnId); code.innerHTML = `<a href="${CONFIG.accountExplorer}${value}" target="_blank" rel="noopener" style="color:inherit">${value}</a>`; code.classList.remove('tba'); btn.disabled = false; btn.onclick = () => copy(value, btn); }
 
   const MILESTONES = [1, 2, 5, 10, 25];
   function renderGauge(pct) {
@@ -682,7 +684,7 @@
   function renderFeed(markNew) {
     const s = app.state; const all = app.filter === 'all' ? s.log : s.log.filter(e => (e.type === 'devburn' ? 'devburn' : e.type === 'milestone' ? 'milestone' : e.reason) === app.filter);
     const rows = all.slice(0, app.feedLimit);
-    $('feedBody').innerHTML = rows.length ? rows.map((e, i) => feedRow(e, i === 0 && markNew && app.filter === 'all')).join('') : '<tr><td colspan="7" style="color:var(--mute)">No burns in this view yet.</td></tr>';
+    $('feedBody').innerHTML = rows.length ? rows.map((e, i) => feedRow(e, i === 0 && markNew && app.filter === 'all')).join('') : `<tr><td colspan="7" style="color:var(--mute)">${s.mode === 'pending' ? 'No burns yet. The Director records the first one here, with its Solscan receipt.' : 'No burns in this view yet.'}</td></tr>`;
     $('moreBtn').hidden = all.length <= app.feedLimit;
   }
   function feedRow(e, isNew) {
@@ -861,6 +863,7 @@
   $('filters').addEventListener('click', e => { const b = e.target.closest('button[data-f]'); if (!b) return; app.filter = b.dataset.f; app.feedLimit = 12; document.querySelectorAll('#filters button').forEach(x => x.classList.toggle('active', x === b)); renderFeed(false); audio.click(); });
   $('copyLink').addEventListener('click', () => copy(location.href, $('copyLink')));
   $('shareX').href = 'https://twitter.com/intent/tweet?text=' + encodeURIComponent('Liberty Labs: half of every $LIBERTY trading fee buys back supply and burns it, live, with receipts. Watch the furnace: ' + location.href);
+  document.addEventListener('ll-state', () => { const m = app.state?.mint; if (m) $('shareX').href = 'https://twitter.com/intent/tweet?text=' + encodeURIComponent('Liberty Labs: half of every $LIBERTY trading fee buys back supply and burns it, live, with receipts. Watch the furnace: ' + location.href + '\nCA: ' + m); });
   $('photo').addEventListener('click', () => $('photo').classList.remove('open'));
 
   document.querySelectorAll('.dock button[data-go]').forEach(b => b.addEventListener('click', () => { const id = b.dataset.go; if (id === 'sound') return; audio.click(); document.getElementById(id)?.scrollIntoView({ behavior: reduceMotion ? 'auto' : 'smooth', block: 'start' }); }));
@@ -1028,7 +1031,7 @@
     const s = screenData || { mode: 'simulation', burnedTokens: 0, totalSupply: 1e9, burnCount: 0, feesFedSol: 0, labShareSol: 0 }; const c = screenCanvas.getContext('2d');
     c.fillStyle = '#0a1226'; c.fillRect(0, 0, 1024, 512); c.strokeStyle = 'rgba(127,168,255,.12)'; c.lineWidth = 2; for (let x = 0; x <= 1024; x += 64) { c.beginPath(); c.moveTo(x, 0); c.lineTo(x, 512); c.stroke(); } for (let y = 0; y <= 512; y += 64) { c.beginPath(); c.moveTo(0, y); c.lineTo(1024, y); c.stroke(); }
     if (screenFlash > 0) { c.fillStyle = `rgba(255,122,26,${screenFlash * 0.55})`; c.fillRect(0, 0, 1024, 512); }
-    c.fillStyle = '#7fa8ff'; c.font = '600 30px "JetBrains Mono", monospace'; c.letterSpacing = '6px'; c.fillText('LIBERTY LABS  ·  ' + (s.mode === 'live' ? 'LIVE' : 'SIMULATION'), 48, 74);
+    c.fillStyle = '#7fa8ff'; c.font = '600 30px "JetBrains Mono", monospace'; c.letterSpacing = '6px'; c.fillText('LIBERTY LABS  ·  ' + (s.mode === 'live' ? 'LIVE' : s.mode === 'pending' ? 'COIN LIVE · WARMING UP' : 'SIMULATION'), 48, 74);
     c.fillStyle = '#ffffff'; c.font = '900 190px "Big Shoulders Display", Impact, sans-serif'; c.letterSpacing = '0px'; c.fillText(fmt(s.burnedTokens), 44, 290);
     c.fillStyle = '#ffb15c'; c.font = '600 34px "JetBrains Mono", monospace'; c.letterSpacing = '4px'; c.fillText('$LIBERTY BURNED  ·  ' + fmtPct(s.burnedTokens / s.totalSupply * 100) + ' OF SUPPLY', 48, 352);
     c.fillStyle = '#c3c6d1'; c.font = '500 30px "JetBrains Mono", monospace'; c.fillText('BURNS ' + fmt(s.burnCount) + '   ·   ' + fmtSol(s.feesFedSol) + ' SOL BURNED   ·   ' + fmtSol(s.labShareSol) + ' SOL LAB   ·   NEXT ' + $('nextFeed').textContent, 48, 430);
