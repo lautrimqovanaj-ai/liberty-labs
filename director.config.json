@@ -1,9 +1,10 @@
 {
-  "_hinweis": "Alle Regeln des Director-Bots. Die KI darf diese Werte NICHT ändern – nur du, hier in der Datei. Alle Zahlen sind Vorschläge und frei anpassbar.",
+  "_note": "All rules of the Director bot. The AI must NOT change these values – only you, here in this file. Every number is a suggestion and can be changed freely.",
   "tokenSymbol": "LIBERTY",
   "tokenDecimals": 6,
   "totalSupply": 1000000000,
   "feedShareOfFees": 0.5,
+  "_note_split": "feedShareOfFees 0.5 = 50 % of every collected fee buys & burns, 50 % goes to TREASURY_WALLET (.env) as the lab share. Disclosed openly on the website.",
   "minFeedSol": 0.02,
   "maxFeedSolPerCycle": 5,
   "reserveSol": 0.01,
@@ -14,7 +15,7 @@
   "slippagePct": 5,
   "devBagBurn": {
     "enabled": false,
-    "_hinweis": "AUS. Der Dev-Kauf gehört dem Team und wird nicht verbrannt. Der Bot verbrennt nur, was er selbst kauft. (Auf true stellen, falls du das später doch willst.)",
+    "_note": "OFF. The team's launch buy belongs to the team and is not burned. The bot only burns what it buys itself. (Set to true if you ever want tranche burns.)",
     "tranches": [
       {
         "mcapUsd": 100000,
@@ -36,12 +37,11 @@
   },
   "narrator": {
     "mode": "auto",
-    "_hinweis": "auto = Claude-API wenn ANTHROPIC_API_KEY gesetzt ist, sonst Vorlagen. Die KI schreibt nur den Kommentar – sie entscheidet nichts über Geld.",
+    "_note": "auto = Claude API when ANTHROPIC_API_KEY is set, otherwise templates. The AI only writes the log line – it never decides anything about money.",
     "model": "claude-haiku-4-5-20251001"
   },
   "output": {
     "statePath": "public/state.json",
     "maxLogEntries": 500
-  },
-  "_hinweis_split": "feedShareOfFees 0.5 = 50 % der eingesammelten Fees kaufen & verbrennen, 50 % gehen als Lab-Anteil an TREASURY_WALLET (.env). Auf der Website offen ausgewiesen."
+  }
 }

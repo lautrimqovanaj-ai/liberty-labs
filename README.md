@@ -1,76 +1,82 @@
-# Liberty Labs – Director-Bot
+# Liberty Labs – Director bot
 
-Der Director sammelt die Creator-Fees deines Pump.fun-Coins ein und teilt sie auf: 50 % kaufen $LIBERTY am Markt und verbrennen die Token, 50 % gehen sofort an dein Treasury-Wallet. Jeder Burn und jede Auszahlung landet mit Transaktions-Signatur in `public/state.json`, das die Website liest.
+*Deutsche Anleitung: [README.de.md](README.de.md)*
 
-Der Bot kann **nur vier Dinge**: Fees einsammeln, deinen Anteil überweisen, kaufen, verbrennen. Eine Verkaufsfunktion gibt es im Code nicht.
+The Director collects the creator fees of the $LIBERTY coin on pump.fun and splits them: **50 % buys $LIBERTY on the open market and burns it, 50 % is paid to the lab treasury wallet.** Every burn and every payout is written with its transaction signature to `public/state.json`, which the website reads. The website itself is served by the same process.
 
-## Wie es abläuft
+The bot can do **exactly four things**: collect fees, pay the lab share, buy, burn. There is no sell function in the code.
 
-1. Trade auf pump.fun → 0,300 % Creator-Fee landet im Creator-Vault (Quelle: pump.fun/docs/fees, Stand 20.05.2026).
-2. Der Bot prüft jede Minute den Vault und die Regeln in `director.config.json`.
-3. Greift eine Regel (Minuten-Takt sobald Budget ≥ 0,02 SOL, Dip −15 %, Burn-Budget ≥ 1 SOL), dann: Fees einsammeln → 50 % an `TREASURY_WALLET` überweisen → mit den anderen 50 % kaufen → mit `BurnChecked` verbrennen.
-4. Eintrag mit Signaturen ins Log; optional Kommentar von der Claude-API; optional Webhook.
+## How it works
 
-Die KI schreibt nur den Kommentar. Über Geld entscheiden ausschliesslich die Regeln (getestet in `test/rules.test.js`).
+1. A trade happens on pump.fun → 0.300 % creator fee lands in the on-chain creator vault (source: [pump.fun/docs/fees](https://pump.fun/docs/fees), last updated 20 May 2026).
+2. Every minute the bot reads the vault and checks the rules in `director.config.json`.
+3. When a rule fires (ritual feed as soon as the burn budget covers 0.02 SOL, dip −15 % in 1 h, burn budget ≥ 1 SOL), it: collects the fees → transfers 50 % to `TREASURY_WALLET` → buys with the other 50 % → burns with the SPL `BurnChecked` instruction.
+4. The entry goes into the log with all signatures; optionally a log line from the Claude API; optionally a webhook post.
+5. Milestones (0.5 / 1 / 2 / 5 / 10 / 25 % of supply burned, 10 / 50 / 100 / 500 / 1000 burns, 1 / 10 / 50 / 100 SOL fed) are detected by the bot and celebrated by the website automatically.
 
-## Voraussetzungen
+The AI only writes the log line. Money is decided exclusively by the rules (`src/rules.js`, tested in `test/rules.test.js`).
 
-- Node.js 20 oder neuer
-- Ein HTTPS-RPC, der Transaktionen senden darf (siehe `.env.example`)
-- Das Creator-Wallet des Coins als Schlüsseldatei. Nimm ein eigenes Wallet nur für diesen Coin.
+## The team's own tokens
 
-## Einrichten
+The bot burns only tokens it bought with fees. The team's launch buy is not part of the burn program: it is held in the public treasury wallet, not locked, and the bot never touches it. The website shows the amount under *Team allocation*.
+
+## Requirements
+
+- Node.js 20 or newer
+- An HTTPS RPC that may send transactions (see `.env.example`)
+- The creator wallet of the coin as a key file or as `KEYPAIR_BASE58`. Use a dedicated wallet for this coin only.
+
+## Setup
 
 ```bash
 npm install
-cp .env.example .env      # ausfüllen: SOLANA_RPC_URL, MINT, KEYPAIR_PATH, TREASURY_WALLET
-npm test                  # Regeln prüfen (13 Tests)
-npm run simulate          # 72 h offline durchspielen → public/state.json (mode: simulation)
-npm run once              # EIN echter Takt (zum Prüfen, mit wenig SOL beginnen)
-npm start                 # Dauerbetrieb
+cp .env.example .env      # fill in: SOLANA_RPC_URL, MINT, KEYPAIR_PATH or KEYPAIR_BASE58, TREASURY_WALLET
+npm test                  # rule engine tests
+npm run simulate          # 72 h offline → public/state.json (mode: simulation)
+npm run once              # ONE real tick (to verify, start with little SOL)
+npm start                 # continuous operation + website on $PORT
 ```
 
-Für den Dauerbetrieb auf einem Server: `pm2 start src/index.js --name director` oder ein systemd-Dienst. Der Bot muss laufen, sonst gibt es keine Burns – die Fees bleiben aber im Vault liegen und werden beim nächsten Start gefüttert.
+`npm start` without `MINT` runs in preview mode: the website is served with simulated data (clearly labelled), so the link exists before the coin does. Set `MINT` after the launch and restart.
 
-## Regeln anpassen
+### Railway / Render
 
-Alles in `director.config.json`:
+Deploy the repo, generate a public domain, set the variables `SOLANA_RPC_URL`, `KEYPAIR_BASE58`, `TREASURY_WALLET` and, after the launch, `MINT`. `PORT` is set by the platform. One instance = bot + website + live data.
 
-| Schlüssel | Standard | Bedeutung |
+### Separate static host (Vercel, Cloudflare Pages)
+
+Upload `public/index.html` and set `CONFIG.stateUrl` in it to `https://<your-bot-host>/state.json`. The built-in server allows cross-origin reads.
+
+## Rules
+
+Everything lives in `director.config.json`:
+
+| Key | Default | Meaning |
 |---|---|---|
-| `feedShareOfFees` | 0.5 | Anteil der Fees, der in Burns geht (0.5 = 50 %); der Rest geht an `TREASURY_WALLET` |
-| `cycleMinutes` | 1 | Feed jede Minute, sobald das Burn-Budget ≥ `minFeedSol` ist |
-| `dipTriggerPct` | 15 | Preis −15 % in 1 h → sofort füttern |
-| `dipCooldownMinutes` | 5 | Höchstens ein Dip-Feed pro 5 Minuten |
-| `surgeSol` | 1.0 | Burn-Budget ≥ 1 SOL → sofort füttern |
-| `minFeedSol` / `maxFeedSolPerCycle` | 0.02 / 5 | Unter dem Minimum warten (Netzgebühren), über dem Maximum Rest im nächsten Takt |
-| `reserveSol` | 0.01 | Bleibt im Wallet für Transaktionsgebühren |
-| `slippagePct` | 5 | Slippage beim Kauf |
-| `devBagBurn.enabled` | false | AUS: Dein Dev-Kauf bleibt bei dir. Der Bot verbrennt nur, was er selbst kauft. |
+| `feedShareOfFees` | 0.5 | Share of every collected fee that buys and burns (0.5 = 50 %); the rest goes to `TREASURY_WALLET` |
+| `cycleMinutes` | 1 | Feed every minute as soon as the burn budget covers `minFeedSol` |
+| `dipTriggerPct` | 15 | Price −15 % within 1 h → feed immediately |
+| `dipCooldownMinutes` | 5 | At most one dip feed per 5 minutes |
+| `surgeSol` | 1.0 | Burn budget ≥ 1 SOL → feed immediately |
+| `minFeedSol` / `maxFeedSolPerCycle` | 0.02 / 5 | Below the minimum wait (network fees would eat the burn); above the maximum the rest waits for the next tick |
+| `reserveSol` | 0.01 | Stays in the wallet for transaction fees |
+| `slippagePct` | 5 | Slippage on buys |
+| `devBagBurn.enabled` | false | OFF: the team's launch buy is never burned by the bot |
 
-Die Zahlen sind Vorschläge. Was du auf der Website versprichst, muss hier drinstehen – die Seite zeigt die Werte aus `state.json`.
+The numbers are suggestions. Whatever the website promises must match this file – the site reads the values from `state.json`.
 
-## Website verbinden
+## Before going live
 
-Die Website liest `./state.json` neben `index.html`. Zwei Wege:
+- The API `https://fun-block.pump.fun` comes from the official repo [pump-fun/pump-fun-skills](https://github.com/pump-fun/pump-fun-skills) (state there: April 2026). Test `npm run once` with a small amount before running the bot continuously.
+- The vault balance is read from the PDA `["creator-vault", creator]` (documented in the same repo). If you set up a fee sharing config on pump.fun, this calculation no longer applies.
+- `usd_market_cap` comes from `frontend-api-v3.pump.fun`. If that API is down, the dip check is skipped for that tick; the ritual feed keeps running.
 
-- **Gleicher Server:** Bot schreibt `public/state.json`, Webserver liefert den Ordner `public/` zusammen mit `index.html` aus.
-- **Vercel/Netlify:** Bot schreibt die Datei und pusht sie z. B. per Cron ins Repo, oder du legst `stateUrl` in `index.html` (CONFIG) auf eine öffentliche URL, die der Bot beschreibt (S3, GitHub Raw, eigener Endpoint).
+## Security
 
-Sobald `state.json` `"mode": "live"` hat, verschwindet der Simulations-Hinweis und die Belege verlinken auf Solscan.
+- The key sits in plain text on your server (or in the platform's variables). One wallet, one coin, never store funds there that you cannot afford to lose.
+- Never commit `.env` or the wallet file (`.gitignore` covers both).
+- The bot never logs keys.
 
-## Was du prüfen musst, bevor du live gehst
+## Disclaimer
 
-- Die API `https://fun-block.pump.fun` stammt aus dem offiziellen Repo `pump-fun/pump-fun-skills` (letzter Stand dort: April 2026). Teste `npm run once` mit kleinem Betrag, bevor der Bot dauerhaft läuft.
-- Der Vault-Stand wird aus der PDA `["creator-vault", creator]` gelesen (Dokumentation im gleichen Repo). Wenn du auf pump.fun eine Fee-Aufteilung (Sharing Config) einrichtest, funktioniert diese Berechnung nicht mehr – dann lass sie weg.
-- `usd_market_cap` kommt von `frontend-api-v3.pump.fun`. Fällt die API aus, passiert in dem Takt kein Dev-Bag-Burn und keine Dip-Prüfung; der Ritual-Feed läuft weiter.
-
-## Sicherheit
-
-- Der Schlüssel liegt im Klartext auf deinem Server. Nur ein Wallet, nur dieser Coin, nie Gelder darauf lagern, die du nicht verlieren darfst.
-- `.env` und `creator-wallet.json` niemals ins Repo committen (`.gitignore` ist gesetzt).
-- Der Bot loggt nie Schlüssel.
-
-## Dein Dev-Kauf
-
-Der Bot verbrennt nur Token, die er selbst mit Fees gekauft hat. Dein Dev-Kauf aus dem Launch bleibt unangetastet. Empfehlung: Schick diese Token nach dem Launch in dein Treasury-Wallet, dann hält das Director-Wallet zwischen den Burns keine Token und die Website zeigt den Team-Anteil sauber getrennt an.
+$LIBERTY is an experimental memecoin. Nothing here is financial advice. Burns are as large as the fees. Not affiliated with any government, agency or public figure, nor with pump.fun.

@@ -1,7 +1,7 @@
 {
   "name": "liberty-labs-director",
   "version": "0.1.0",
-  "description": "Der Director-Bot von Liberty Labs: sammelt Creator-Fees, kauft $LIBERTY zurück und verbrennt sie – mit öffentlichem Beweis-Log.",
+  "description": "Liberty Labs Director bot: collects creator fees, pays the lab share, buys $LIBERTY back and burns it – with a public receipt log and the built-in website.",
   "type": "module",
   "private": true,
   "engines": {
